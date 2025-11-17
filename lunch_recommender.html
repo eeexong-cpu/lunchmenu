@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 점심 메뉴 추천</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6b35;
+            margin-bottom: 15px;
+            font-size: 2.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 35px;
+            font-size: 0.95em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        .weather-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .weather-btn {
+            padding: 18px;
+            border: 3px solid #e0e0e0;
+            background: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .weather-btn:hover {
+            border-color: #ffa751;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 167, 81, 0.3);
+        }
+
+        .weather-btn.selected {
+            border-color: #ff6b35;
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+            font-weight: 600;
+        }
+
+        .weather-icon {
+            font-size: 2em;
+        }
+
+        .weather-text {
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        .temp-input-group {
+            position: relative;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 18px 50px 18px 18px;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1.2em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #ffa751;
+        }
+
+        .temp-unit {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .recommend-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ffa751 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .recommend-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        .recommend-btn:active {
+            transform: translateY(0);
+        }
+
+        .recommend-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .result {
+            margin-top: 35px;
+            padding: 30px;
+            background: linear-gradient(135deg, #fff9f5 0%, #ffede0 100%);
+            border-radius: 20px;
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .menu-icon {
+            text-align: center;
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .menu-title {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 20px;
+        }
+
+        .menu-reason {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        .menu-reason strong {
+            color: #ff6b35;
+        }
+
+        .alternative {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #ffa751;
+        }
+
+        .alternative-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .alternative-list {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ 점심 메뉴 추천</h1>
+        <div class="subtitle">오늘의 날씨와 기온에 딱 맞는 메뉴를 찾아드려요!</div>
+
+        <div class="input-section">
+            <label>오늘 날씨는 어때요?</label>
+            <div class="weather-options">
+                <div class="weather-btn" onclick="selectWeather('맑음')">
+                    <div class="weather-icon">☀️</div>
+                    <div class="weather-text">맑음</div>
+                </div>
+                <div class="weather-btn" onclick="selectWeather('흐림')">
+                    <div class="weather-icon">☁️</div>
+                    <div class="weather-text">흐림</div>
+                </div>
+                <div class="weather-btn" onclick="selectWeather('비')">
+                    <div class="weather-icon">🌧️</div>
+                    <div class="weather-text">비</div>
+                </div>
+                <div class="weather-btn" onclick="selectWeather('눈')">
+                    <div class="weather-icon">❄️</div>
+                    <div class="weather-text">눈</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <label for="temperature">현재 기온은 몇 도인가요?</label>
+            <div class="temp-input-group">
+                <input type="number" id="temperature" placeholder="예: 15" min="-30" max="45">
+                <span class="temp-unit">°C</span>
+            </div>
+        </div>
+
+        <button class="recommend-btn" onclick="recommendMenu()">메뉴 추천받기</button>
+
+        <div class="error" id="error">날씨와 기온을 모두 입력해주세요!</div>
+
+        <div class="result" id="result">
+            <div class="menu-icon" id="menuIcon"></div>
+            <div class="menu-title" id="menuTitle"></div>
+            <div class="menu-reason" id="menuReason"></div>
+            <div class="alternative">
+                <div class="alternative-title">다른 추천 메뉴</div>
+                <div class="alternative-list" id="alternatives"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedWeather = null;
+
+        function selectWeather(weather) {
+            selectedWeather = weather;
+            const buttons = document.querySelectorAll('.weather-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.closest('.weather-btn').classList.add('selected');
+        }
+
+        const menuDatabase = {
+            hot: { // 25도 이상
+                맑음: {
+                    main: { name: '냉면', icon: '🍜', reason: '더운 날씨에는 시원한 냉면이 최고예요! 육수가 청량감을 주고, 맑은 날씨에 딱 맞는 선택입니다.' },
+                    alternatives: ['냉모밀', '콩국수', '비빔국수', '샐러드']
+                },
+                흐림: {
+                    main: { name: '쌀국수', icon: '🍲', reason: '흐린 날씨지만 더운 기온에는 가볍고 시원한 쌀국수가 좋아요. 부담 없이 즐기기 좋습니다.' },
+                    alternatives: ['월남쌈', '샐러드 보울', '포케', '냉우동']
+                },
+                비: {
+                    main: { name: '칼국수', icon: '🍜', reason: '비 오는 날이지만 더운 날씨라면 칼국수가 딱이에요! 얼큰한 국물이 입맛을 돋워줍니다.' },
+                    alternatives: ['짬뽕', '해물탕', '부대찌개', '김치찌개']
+                },
+                눈: {
+                    main: { name: '만두전골', icon: '🥟', reason: '눈 오는 날에는 따뜻한 만두전골로 몸을 녹이세요. 포근한 기분을 느낄 수 있어요.' },
+                    alternatives: ['샤브샤브', '뚝배기 요리', '순두부찌개', '김치만두']
+                }
+            },
+            warm: { // 15-24도
+                맑음: {
+                    main: { name: '비빔밥', icon: '🍚', reason: '온화한 날씨에는 건강한 비빔밥이 최고예요! 다양한 나물과 영양이 가득합니다.' },
+                    alternatives: ['덮밥류', '김밥', '샌드위치', '파스타']
+                },
+                흐림: {
+                    main: { name: '돈까스', icon: '🍛', reason: '흐린 날씨에 기분 전환이 필요해요. 바삭한 돈까스로 활력을 충전하세요!' },
+                    alternatives: ['함박스테이크', '생선까스', '치킨까스', '카레라이스']
+                },
+                비: {
+                    main: { name: '파전과 막걸리', icon: '🥞', reason: '비 오는 날의 클래식! 바삭한 파전과 막걸리의 조합은 언제나 옳습니다.' },
+                    alternatives: ['부침개', '튀김', '치킨', '떡볶이']
+                },
+                눈: {
+                    main: { name: '어묵탕', icon: '🍢', reason: '눈 내리는 날엔 따뜻한 어묵탕이 생각나죠. 호호 불어가며 먹는 재미가 있어요.' },
+                    alternatives: ['우동', '라면', '국물 떡볶이', '순대국']
+                }
+            },
+            cool: { // 5-14도
+                맑음: {
+                    main: { name: '된장찌개', icon: '🍲', reason: '선선한 날씨에는 구수한 된장찌개가 딱이에요. 따뜻하게 몸을 데워줍니다.' },
+                    alternatives: ['김치찌개', '순두부찌개', '청국장', '고등어조림']
+                },
+                흐림: {
+                    main: { name: '국밥', icon: '🍜', reason: '쌀쌀하고 흐린 날엔 든든한 국밥 한 그릇! 속이 편안해지고 기운이 납니다.' },
+                    alternatives: ['설렁탕', '갈비탕', '곰탕', '해장국']
+                },
+                비: {
+                    main: { name: '부대찌개', icon: '🍲', reason: '비 오는 쌀쌀한 날씨엔 얼큰한 부대찌개가 최고! 햄과 소시지의 조합이 환상적이에요.' },
+                    alternatives: ['김치찌개', '순두부찌개', '짬뽕', '매운탕']
+                },
+                눈: {
+                    main: { name: '감자탕', icon: '🥘', reason: '눈 내리는 추운 날엔 뜨끈한 감자탕으로 몸을 녹여요. 얼큰하고 구수합니다!' },
+                    alternatives: ['해장국', '뼈해장국', '곰탕', '설렁탕']
+                }
+            },
+            cold: { // 5도 미만
+                맑음: {
+                    main: { name: '삼계탕', icon: '🍗', reason: '추운 날씨지만 맑은 하늘! 보양식 삼계탕으로 기운을 회복하세요.' },
+                    alternatives: ['백숙', '영양탕', '곰탕', '설렁탕']
+                },
+                흐림: {
+                    main: { name: '해물탕', icon: '🦐', reason: '을씨년스러운 날씨엔 얼큰한 해물탕! 해산물의 시원함이 추위를 잊게 해줘요.' },
+                    alternatives: ['매운탕', '대구탕', '아귀찜', '해물찜']
+                },
+                비: {
+                    main: { name: '짬뽕', icon: '🍜', reason: '추운 비 오는 날엔 뜨끈한 짬뽕이 정답! 얼얼한 매운맛이 온몸을 따뜻하게 해줍니다.' },
+                    alternatives: ['짬짬탕', '볶음짬뽕', '유니짜장', '우동']
+                },
+                눈: {
+                    main: { name: '설렁탕', icon: '🍲', reason: '눈 오는 추운 날엔 하얀 설렁탕! 진한 국물이 꽁꽁 얼어붙은 몸을 녹여줍니다.' },
+                    alternatives: ['곰탕', '갈비탕', '감자탕', '순대국']
+                }
+            }
+        };
+
+        function getTemperatureCategory(temp) {
+            if (temp >= 25) return 'hot';
+            if (temp >= 15) return 'warm';
+            if (temp >= 5) return 'cool';
+            return 'cold';
+        }
+
+        function recommendMenu() {
+            const temperature = parseInt(document.getElementById('temperature').value);
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+
+            // 유효성 검사
+            if (!selectedWeather || isNaN(temperature)) {
+                error.style.display = 'block';
+                result.style.display = 'none';
+                return;
+            }
+
+            error.style.display = 'none';
+
+            // 기온 카테고리 결정
+            const tempCategory = getTemperatureCategory(temperature);
+            const menuData = menuDatabase[tempCategory][selectedWeather];
+
+            // 결과 표시
+            document.getElementById('menuIcon').textContent = menuData.main.icon;
+            document.getElementById('menuTitle').textContent = menuData.main.name;
+            document.getElementById('menuReason').innerHTML = menuData.main.reason;
+            document.getElementById('alternatives').textContent = menuData.alternatives.join(', ');
+
+            result.style.display = 'block';
+            result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Enter 키로 추천받기
+        document.getElementById('temperature').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                recommendMenu();
+            }
+        });
+    </script>
+</body>
+</html>
